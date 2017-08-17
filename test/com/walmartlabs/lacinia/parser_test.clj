@@ -14,6 +14,13 @@
        (parser/parse-query compiled-schema)
        (parser/operations)))
 
+(defn ^:private args
+  [query]
+  (->> query
+       (parser/parse-query compiled-schema)
+))
+
+
 (deftest single-query
   (is (= {:operations #{:hero}
           :type :query}
@@ -33,3 +40,13 @@
                name
              }
            }"))))
+
+(deftest string-escaping
+  (is (= {:id "1234"
+          :newHomePlanet "A \"great\" place"}
+
+         (->> "mutation { changeHeroHomePlanet(id: \"1234\", newHomePlanet: \"A \\\"great\\\" place\") {name}}"
+              (parser/parse-query compiled-schema)
+              :selections
+              first
+              :arguments))))
